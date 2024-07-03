@@ -29,6 +29,16 @@ def check_if_numbers_are_consecutive(list_):
     )
 
 
+def _need_quote(key: str | int, separator: str) -> bool:
+    if isinstance(key, int):
+        return False
+    if " " in key:
+        return True
+    if separator in key:
+        return True
+    return False
+
+
 def _construct_key(previous_key, separator, new_key, replace_separators=None):
     """
     Returns the new_key if no previous key exists, otherwise concatenates
@@ -42,10 +52,26 @@ def _construct_key(previous_key, separator, new_key, replace_separators=None):
     """
     if replace_separators is not None:
         new_key = str(new_key).replace(separator, replace_separators)
+    elif _need_quote(new_key, separator):
+        new_key = "'{}'".format(new_key)
     if previous_key:
         return u"{}{}{}".format(previous_key, separator, new_key)
     else:
         return new_key
+
+
+def smart_split(input_str: str, separator: str = ".") -> list[str]:
+    """
+    Split a string by separator, but ignore separators within quotes.
+
+    :param input_str: string to split
+    :param separator: separator to split by
+    :return: list of strings
+    """
+    if separator in (".",):
+        separator = "\\" + separator
+    pattern = f"{separator}(?=(?:[^']*'[^']*')*[^']*$)"
+    return [x.strip("'") for x in re.split(pattern, input_str)]
 
 
 def flatten(
@@ -384,16 +410,16 @@ def unflatten(flat_dict, separator='_'):
     list_keys = sorted(flat_dict.keys())
     for i, item in enumerate(list_keys):
         if i != len(list_keys) - 1:
-            split_key = item.split(separator)
-            next_split_key = list_keys[i + 1].split(separator)
-            if not split_key == next_split_key[:-1]:
-                _unflatten(unflattened_dict, item.split(separator),
+            split_key = smart_split(item, separator)
+            next_split_key = smart_split(list_keys[i + 1], separator)
+            if split_key != next_split_key[:-1]:
+                _unflatten(unflattened_dict, smart_split(item, separator),
                            flat_dict[item])
             else:
                 pass  # if key contained in next key, json will be invalid.
         else:
             #  last element
-            _unflatten(unflattened_dict, item.split(separator),
+            _unflatten(unflattened_dict, smart_split(item, separator),
                        flat_dict[item])
     return unflattened_dict
 

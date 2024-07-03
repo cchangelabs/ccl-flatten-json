@@ -5,7 +5,7 @@ import json
 import unittest
 
 from flatten_json import (check_if_numbers_are_consecutive, cli, flatten,
-                          flatten_preserve_lists, unflatten, unflatten_list)
+                          flatten_preserve_lists, unflatten, unflatten_list, smart_split)
 
 try:
     # python2
@@ -225,6 +225,36 @@ class UnitTests(unittest.TestCase):
             }
         }
         actual = unflatten_list(dic, ':')
+        self.assertEqual(expected, actual)
+
+    def test_unflatten_with_spaces(self):
+        dic = {
+            "a": 1,
+            "b.c.d": 1,
+            "b.'c 1'.d": 2,
+            "c.a": 'a',
+        }
+        expected = {
+            'a': 1,
+            'b': {'c': {'d': 1}, 'c 1': {'d': 2}},
+            'c': {'a': 'a'}
+        }
+        actual = unflatten(dic, '.')
+        self.assertEqual(expected, actual)
+
+    def test_unflatten_with_dot(self):
+        dic = {
+            "a": 1,
+            "b.c.d": 1,
+            "b.'c.d'.d": 2,
+            "c.a": 'a',
+        }
+        expected = {
+            'a': 1,
+            'b': {'c': {'d': 1}, 'c.d': {'d': 2}},
+            'c': {'a': 'a'}
+        }
+        actual = unflatten(dic, '.')
         self.assertEqual(expected, actual)
 
     def test_unflatten_with_list_nested(self):
@@ -2192,6 +2222,33 @@ class UnitTests(unittest.TestCase):
         actual = flatten(dic, root_keys_to_ignore={'b', 'c'})
         self.assertEqual(expected, actual)
 
+    def test_flatten_with_spaces(self):
+        dic = {
+            "a 1 2 3": {"b": 1},
+            "c": 2
+        }
+        expected = {
+            "'a 1 2 3'.b": 1,
+            "c": 2
+        }
+        actual = flatten(dic, ".")
+        self.assertEqual(expected, actual)
+
+    def test_flatten_with_separator_in_key(self):
+        dic = {
+            "a.B.B.C": {"b": 1},
+            "b 2.3": {"a": 3},
+            "c": 2
+        }
+        expected = {
+            "'a.B.B.C'.b": 1,
+            "'b 2.3'.a": 3,
+            "c": 2
+        }
+        actual = flatten(dic, ".")
+        self.assertEqual(expected, actual)
+
+
     def test_command_line(self):
         input_stream = StringIO(u'{"a": {"b": 1}}')
         output_stream = StringIO()
@@ -2205,9 +2262,9 @@ class UnitTests(unittest.TestCase):
             'a_with_separator': {'b': [1, 2, 3]},
         }
         expected = {
-            'a_with_separator_b_0': 1,
-            'a_with_separator_b_1': 2,
-            'a_with_separator_b_2': 3
+            "'a_with_separator'_b_0": 1,
+            "'a_with_separator'_b_1": 2,
+            "'a_with_separator'_b_2": 3
         }
         actual = flatten(dic)
         self.assertEqual(expected, actual)
@@ -2247,6 +2304,23 @@ class UnitTests(unittest.TestCase):
         }
         actual = flatten(dic, replace_separators='')
         self.assertEqual(expected, actual)
+
+
+class TestSmartSplit(unittest.TestCase):
+    def test_simple_case(self):
+        self.assertEqual(smart_split("a.b.c"), ["a", "b", "c"])
+
+    def test_with_space(self):
+        self.assertEqual(smart_split("a.'something with space'.c"), ["a", "something with space", "c"])
+
+    def test_with_inner_separator(self):
+        self.assertEqual(smart_split("a.'b.c'.d"), ["a", "b.c", "d"])
+
+    def test_empty_string(self):
+        self.assertEqual(smart_split(""), [""])
+
+    def test_no_separator(self):
+        self.assertEqual(smart_split("abc"), ["abc"])
 
 
 if __name__ == '__main__':
