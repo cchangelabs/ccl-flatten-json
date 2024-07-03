@@ -4,14 +4,14 @@ from setuptools import setup
 # The upload both the sdist and wheel under ./dist
 
 setup(
-    name='flatten_json',
+    name='ccl-flatten-json',
     packages=['flatten_json'],
-    version='0.1.14',
+    version='0.2.0',
     description='Flatten JSON objects',
     license='MIT',
-    author='Amir Ziai',
-    author_email='arziai@gmail.com',
-    url='https://github.com/amirziai/flatten',
+    author='C-Change Labs Inc.',
+    author_email='support@c-change-labs.com',
+    url='https://github.com/cchangelabs/ccl-flatten-json',
     keywords=['json', 'flatten', 'pandas'],
     classifiers=[],
     entry_points={
