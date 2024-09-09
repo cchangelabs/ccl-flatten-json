@@ -380,23 +380,25 @@ def flatten_preserve_lists(nested_dict, separator="_",
     return list_prebuilt_flattened_dict['0']
 
 
-def _unflatten_asserts(flat_dict, separator):
+def _unflatten_asserts(flat_dict, separator, require_flat: bool = True):
     assert isinstance(flat_dict, dict), "un_flatten requires dictionary input"
     assert isinstance(separator, six.string_types), "separator must be string"
-    assert all((not value or not isinstance(value, Iterable) or
-                isinstance(value, six.string_types)
-                for value in flat_dict.values())), "provided dict is not flat"
+    if require_flat:
+        assert all((not value or not isinstance(value, Iterable) or
+                    isinstance(value, six.string_types)
+                    for value in flat_dict.values())), "provided dict is not flat"
 
 
-def unflatten(flat_dict, separator='_'):
+def unflatten(flat_dict, separator='_', require_flat: bool = True):
     """
     Creates a hierarchical dictionary from a flattened dictionary
     Assumes no lists are present
     :param flat_dict: a dictionary with no hierarchy
     :param separator: a string that separates keys
+    :param require_flat: if True, will check if the input is flat
     :return: a dictionary with hierarchy
     """
-    _unflatten_asserts(flat_dict, separator)
+    _unflatten_asserts(flat_dict, separator, require_flat)
 
     # This global dictionary is mutated and returned
     unflattened_dict = dict()
@@ -424,7 +426,7 @@ def unflatten(flat_dict, separator='_'):
     return unflattened_dict
 
 
-def unflatten_list(flat_dict, separator='_'):
+def unflatten_list(flat_dict, separator='_', require_flat: bool = True):
     """
     Unflattens a dictionary, first assuming no lists exist and then tries to
     identify lists and replaces them
@@ -437,9 +439,10 @@ def unflatten_list(flat_dict, separator='_'):
 
     :param flat_dict: dictionary with no hierarchy
     :param separator: a string that separates keys
+    :param require_flat: if True, will check if the input is flat
     :return: a dictionary with hierarchy
     """
-    _unflatten_asserts(flat_dict, separator)
+    _unflatten_asserts(flat_dict, separator, require_flat)
 
     # First unflatten the dictionary assuming no lists exist
     unflattened_dict = unflatten(flat_dict, separator)
