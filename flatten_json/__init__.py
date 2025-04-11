@@ -445,7 +445,7 @@ def unflatten_list(flat_dict, separator='_', require_flat: bool = True):
     _unflatten_asserts(flat_dict, separator, require_flat)
 
     # First unflatten the dictionary assuming no lists exist
-    unflattened_dict = unflatten(flat_dict, separator)
+    unflattened_dict = unflatten(flat_dict, separator, require_flat)
 
     def _convert_dict_to_list(object_, parent_object, parent_object_key):
         if isinstance(object_, dict):

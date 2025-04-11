@@ -6,7 +6,7 @@ from setuptools import setup
 setup(
     name='ccl-flatten-json',
     packages=['flatten_json'],
-    version='0.2.1',
+    version='0.2.2',
     description='Flatten JSON objects',
     license='MIT',
     author='C-Change Labs Inc.',
